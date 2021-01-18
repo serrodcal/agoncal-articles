@@ -1,40 +1,61 @@
 package org.agoncal.article.javaadvent.pokemon;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.quarkus.vertx.web.Route;
+import io.quarkus.vertx.web.RouteBase;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.Json;
+import io.vertx.ext.web.RoutingContext;
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import java.util.List;
+import javax.inject.Singleton;
 
 /**
  * @author Antonio Goncalves @agoncal
  * http://www.antoniogoncalves.org
  * --
+ * Edited by @serrodcal
  */
-@Path("/api/pokemons")
-@Produces(MediaType.APPLICATION_JSON)
+@OpenAPIDefinition(info = @Info(title = "API that returns Pokemons", version = "1.0"))
+@Singleton
+@RouteBase(path = "/api")
 public class PokemonResource {
 
     private static final Logger LOGGER = Logger.getLogger(PokemonResource.class);
 
-    @GET
-    @Path("/random")
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String TEXT_PLAIN = "text/plain";
+
+    /**
+     * curl "http://localhost:8703/api/pokemons" | jq
+     * curl "http://localhost:8703/api/pokemons/random" | jq
+     */
+    @Route(path = "/pokemons/random", methods = HttpMethod.GET)
     @APIResponse(responseCode = "200", description = "Returns a random Pokemon")
-    public Pokemon getARandomPokemon() {
+    public void getARandomPokemon(RoutingContext rc) {
         LOGGER.info("Get a random Pokemon");
-        return Pokemon.findARandomPokemon();
+        Pokemon.findARandomPokemon().subscribe().with(result -> {
+            rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).setStatusCode(HttpResponseStatus.OK.code()).end(Json.encode(result));
+        }, failure -> {
+            rc.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).putHeader(HttpHeaders.CONTENT_TYPE, TEXT_PLAIN).end(failure.getMessage());
+        });
     }
 
-    @GET
+    @Route(path = "/pokemons", methods = HttpMethod.GET)
     @APIResponse(responseCode = "200", description = "Returns all the Pokemons", content = @Content(schema = @Schema(implementation = Pokemon.class, type = SchemaType.ARRAY)))
-    public List<Pokemon> getAllPokemons() {
+    public void getAllPokemons(RoutingContext rc) {
         LOGGER.info("Returns all the Pokemons");
-        return Pokemon.findAll().list();
+        Pokemon.findAll().list().subscribe().with(result -> {
+            rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).setStatusCode(HttpResponseStatus.OK.code()).end(Json.encode(result));
+        }, failure -> {
+            rc.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).putHeader(HttpHeaders.CONTENT_TYPE, TEXT_PLAIN).end(failure.getMessage());
+        });
     }
 }
