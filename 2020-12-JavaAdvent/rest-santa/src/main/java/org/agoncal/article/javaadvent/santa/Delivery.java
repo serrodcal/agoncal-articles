@@ -1,6 +1,6 @@
 package org.agoncal.article.javaadvent.santa;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import org.agoncal.article.javaadvent.santa.proxy.Child;
 
 import javax.persistence.Entity;
@@ -9,6 +9,7 @@ import javax.persistence.Entity;
  * @author Antonio Goncalves @agoncal
  * http://www.antoniogoncalves.org
  * --
+ * Edited by @serrodcal
  */
 @Entity
 public class Delivery extends PanacheEntity {
