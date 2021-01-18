@@ -16,7 +16,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
 import javax.inject.Singleton;
-import java.util.List;
 
 /**
  * @author Antonio Goncalves @agoncal
