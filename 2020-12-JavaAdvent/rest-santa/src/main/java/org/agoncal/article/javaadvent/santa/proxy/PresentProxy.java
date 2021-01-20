@@ -1,5 +1,6 @@
 package org.agoncal.article.javaadvent.santa.proxy;
 
+import io.smallrye.mutiny.Uni;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.ws.rs.GET;
@@ -11,6 +12,7 @@ import javax.ws.rs.core.MediaType;
  * @author Antonio Goncalves @agoncal
  * http://www.antoniogoncalves.org
  * --
+ * Edited by @serrodcal
  */
 // tag::adocSnippet[]
 @Path("/api/pokemons/random")
@@ -19,6 +21,6 @@ public interface PresentProxy {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    Present getAPresent();
+    Uni<Present> getAPresent();
 }
 // end::adocSnippet[]

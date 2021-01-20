@@ -1,5 +1,6 @@
 package org.agoncal.article.javaadvent.santa;
 
+import io.smallrye.mutiny.Uni;
 import org.agoncal.article.javaadvent.santa.proxy.Child;
 import org.agoncal.article.javaadvent.santa.proxy.ChildProxy;
 import org.agoncal.article.javaadvent.santa.proxy.PresentProxy;
@@ -12,12 +13,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 /**
  * @author Antonio Goncalves @agoncal
  * http://www.antoniogoncalves.org
  * --
+ * Edited by @serrodcal
  */
 // tag::adocSnippet[]
 @ApplicationScoped
@@ -39,26 +40,27 @@ public class SantaService {
     @Retry(maxRetries = 5, delay = 2, delayUnit = ChronoUnit.SECONDS)
     @Fallback(fallbackMethod = "getLastYearSchedule")
     // end::adocChildProxyFallback[]
-    public Schedule getAllGoodChildren(String country) {
+    public Uni<Schedule> getAllGoodChildren(String country) {
         // tag::adocSkip[]
         LOGGER.info("Getting the children from " + country);
         // end::adocSkip[]
-        Schedule schedule = new Schedule(2020, country);
-
-        List<Child> allChildrenPerCountry = childProxy.getAllGoodChildren(country);
-        for (Child child : allChildrenPerCountry) {
-            schedule.addDelivery(child);
-        }
-        return schedule;
+        return childProxy.getAllGoodChildren(country).flatMap(allChildrenPerCountry ->{
+            Schedule schedule = new Schedule(2020, country);
+            for (Child child : allChildrenPerCountry) {
+                schedule.addDelivery(child);
+            }
+            return Uni.createFrom().item(schedule);
+        });
     }
     // tag::adocChildProxyFallback[]
 
-    public Schedule getLastYearSchedule(String country) {
+    public Uni<Schedule> getLastYearSchedule(String country) {
         // tag::adocSkip[]
         LOGGER.info("Getting last year schedule for " + country);
         // end::adocSkip[]
-        Schedule schedule = Schedule.findByYearAndCountry(2019, country).get();
-        return deepCopy(schedule);
+        return Schedule.findByYearAndCountry(2019, country).flatMap( schedule -> {
+            return Uni.createFrom().item(deepCopy(schedule));
+        });
     }
     // end::adocChildProxyFallback[]
     // end::adocChildProxy[]
@@ -90,19 +92,21 @@ public class SantaService {
     // tag::adocPresentProxyFallback[]
     @Fallback(fallbackMethod = "getEachChildSomeLollies")
     // end::adocPresentProxyFallback[]
-    public Schedule getEachChildAPresent(Schedule schedule) {
+    public Uni<Schedule> getEachChildAPresent(Schedule schedule) {
         // tag::adocSkip[]
         LOGGER.info("Getting a few presents");
 
         // end::adocSkip[]
         for (Delivery delivery : schedule.deliveries) {
-            delivery.presentName = presentProxy.getAPresent().name;
+            presentProxy.getAPresent().onItem().invoke(d-> {
+                delivery.presentName =  d.name;
+            });
         }
-        return schedule;
+        return Uni.createFrom().item(schedule);
     }
 
     // tag::adocPresentProxyFallback[]
-    public Schedule getEachChildSomeLollies(Schedule schedule) {
+    public Uni<Schedule> getEachChildSomeLollies(Schedule schedule) {
         // tag::adocSkip[]
         LOGGER.info("Getting some lollies for each child");
 
@@ -110,7 +114,7 @@ public class SantaService {
         for (Delivery delivery : schedule.deliveries) {
             delivery.presentName = "Santa Lollies";
         }
-        return schedule;
+        return Uni.createFrom().item(schedule);
     }
     // end::adocPresentProxyFallback[]
     // end::adocPresentProxy[]

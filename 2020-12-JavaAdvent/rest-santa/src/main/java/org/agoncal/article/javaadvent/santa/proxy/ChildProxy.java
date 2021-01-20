@@ -1,5 +1,6 @@
 package org.agoncal.article.javaadvent.santa.proxy;
 
+import io.smallrye.mutiny.Uni;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.ws.rs.GET;
@@ -13,6 +14,7 @@ import java.util.List;
  * @author Antonio Goncalves @agoncal
  * http://www.antoniogoncalves.org
  * --
+ * Edited by @serrodcal
  */
 // tag::adocSnippet[]
 @Path("/api/kids")
@@ -21,6 +23,6 @@ public interface ChildProxy {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    List<Child> getAllGoodChildren(@QueryParam("country") String country);
+    Uni<List<Child>> getAllGoodChildren(@QueryParam("country") String country);
 }
 // end::adocSnippet[]
