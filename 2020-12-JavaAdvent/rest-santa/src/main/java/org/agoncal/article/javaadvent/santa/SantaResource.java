@@ -5,7 +5,6 @@ import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.Param;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RouteBase;
-import io.vertx.core.cli.annotations.DefaultValue;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.Json;
@@ -18,8 +17,6 @@ import org.jboss.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.transaction.Transactional;
-import javax.ws.rs.QueryParam;
-import java.util.Optional;
 
 /**
  * @author Antonio Goncalves @agoncal

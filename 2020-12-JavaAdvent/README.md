@@ -1,4 +1,5 @@
 # agoncal-article-java-advent-2020
+
 Code for the article written for Java Advent 2020
 
 ## Running the Sample
